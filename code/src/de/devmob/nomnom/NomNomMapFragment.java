@@ -64,7 +64,11 @@ public class NomNomMapFragment extends Fragment
     @Override
     public boolean onOptionsItemSelected(MenuItem item)
     {
-        // TODO (fwild): Switch tabs
+        // Switch tabs
+        if (item.getItemId() == R.id.action_list)
+        {
+            ((NomNomActivity)this.getActivity()).switchRepresentationToList();
+        }
 
         return super.onOptionsItemSelected(item);
     }

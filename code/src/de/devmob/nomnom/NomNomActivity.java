@@ -38,4 +38,53 @@ public class NomNomActivity extends FragmentActivity
             fragmentTransaction.commit();
         }
     }
+
+    /**
+     * Method to toggle the current representation to map view.
+     */
+    public void switchRepresentationToMap()
+    {
+        this.switchRepresentation(true);
+    }
+
+    /**
+     * Method to toggle the current representation to list view.
+     */
+    public void switchRepresentationToList()
+    {
+        this.switchRepresentation(false);
+    }
+
+    /**
+     * Internal method to handle switching the fragment of the current representation.
+     * @param isSwitchToMap
+     */
+    private void switchRepresentation(boolean isSwitchToMap)
+    {
+        FragmentManager fragmentManager = this.getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+        Fragment newFragment;
+        String tag;
+
+        if (isSwitchToMap)
+        {
+            tag = NomNomMapFragment.class.getName();
+        }
+        else
+        {
+            tag = NomNomListFragment.class.getName();
+        }
+        
+        newFragment = fragmentManager.findFragmentByTag(tag);
+        if (newFragment == null)
+        {
+            newFragment = Fragment.instantiate(this, tag);
+        }
+
+        // Replace the current with the new fragment
+        fragmentTransaction.replace(R.id.box_content, newFragment, tag);
+        // Commit the transaction
+        fragmentTransaction.commit();
+    }
 }
