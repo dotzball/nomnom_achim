@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Nom Nom</string>
+    <string name="title_results">Nom Noms Nearby</string>
+
+    <!-- Actionmenu entries -->
+    <string name="action_list">Show As List</string>
+    <string name="action_map">Show As Map</string>
+
+</resources>
