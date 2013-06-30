@@ -16,6 +16,9 @@ import android.support.v4.app.FragmentTransaction;
  */
 public class NomNomActivity extends FragmentActivity
 {
+    private static final String MAP_CLASS = NomNomMapFragment.class.getName();
+    private static final String LIST_CLASS = NomNomListFragment.class.getName();
+
     /* (non-Javadoc)
      * @see android.app.Activity#onCreate(android.os.Bundle)
      */
@@ -30,10 +33,9 @@ public class NomNomActivity extends FragmentActivity
             FragmentManager fragmentManager = this.getSupportFragmentManager();
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
             // Start the app with the map fragment
-            String tag = NomNomMapFragment.class.getName();
-            Fragment fragment = Fragment.instantiate(this, tag);
+            Fragment fragment = Fragment.instantiate(this, MAP_CLASS);
             // Add the fragment and use the class name as tag too
-            fragmentTransaction.add(R.id.box_content, fragment, tag);
+            fragmentTransaction.add(R.id.box_content, fragment, MAP_CLASS);
             // Commit the transaction
             fragmentTransaction.commit();
         }
@@ -65,25 +67,42 @@ public class NomNomActivity extends FragmentActivity
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
         Fragment newFragment;
-        String tag;
+        Fragment oldFragment;
+        String newTag;
+        String oldTag;
 
         if (isSwitchToMap)
         {
-            tag = NomNomMapFragment.class.getName();
+            newTag = MAP_CLASS;
+            oldTag = LIST_CLASS;
         }
         else
         {
-            tag = NomNomListFragment.class.getName();
-        }
-        
-        newFragment = fragmentManager.findFragmentByTag(tag);
-        if (newFragment == null)
-        {
-            newFragment = Fragment.instantiate(this, tag);
+            newTag = LIST_CLASS;
+            oldTag = MAP_CLASS;
         }
 
-        // Replace the current with the new fragment
-        fragmentTransaction.replace(R.id.box_content, newFragment, tag);
+        // Find the old fragment (if available)
+        oldFragment = fragmentManager.findFragmentByTag(oldTag);
+        if (oldFragment != null)
+        {
+            // In case it was already shown, we hide it for fast switching between both representations
+            fragmentTransaction.hide(oldFragment);
+        }
+
+        // Find the now wanted fragment 
+        newFragment = fragmentManager.findFragmentByTag(newTag);
+        if (newFragment == null)
+        {
+            newFragment = Fragment.instantiate(this, newTag);
+            // Add the fragment
+            fragmentTransaction.add(R.id.box_content, newFragment, newTag);
+        }
+        else
+        {
+            fragmentTransaction.show(newFragment);
+        }
+
         // Commit the transaction
         fragmentTransaction.commit();
     }
