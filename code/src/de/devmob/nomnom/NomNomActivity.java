@@ -8,6 +8,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import de.devmob.nomnom.data.NomNomUpdater;
 
 /**
  * Activity holding the result restaurants on a map or a list.
@@ -39,6 +40,18 @@ public class NomNomActivity extends FragmentActivity
             // Commit the transaction
             fragmentTransaction.commit();
         }
+    }
+
+    /* (non-Javadoc)
+     * @see android.support.v4.app.FragmentActivity#onResume()
+     */
+    @Override
+    protected void onResume()
+    {
+        super.onResume();
+
+        // Check for updates of places near the current location.
+        NomNomUpdater.getInstance().updateFromPosition(this);
     }
 
     /**
