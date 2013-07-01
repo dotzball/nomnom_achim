@@ -17,6 +17,11 @@ import android.view.ViewGroup;
  */
 public class NomNomMapFragment extends Fragment
 {
+    /**
+     * Note that this may be null if the Google Play services APK is not available.
+     */
+    private GoogleMap mMap;
+
     /* (non-Javadoc)
      * @see android.support.v4.app.Fragment#onActivityCreated(android.os.Bundle)
      */
@@ -26,8 +31,18 @@ public class NomNomMapFragment extends Fragment
         super.onActivityCreated(savedInstanceState);
 
         this.setHasOptionsMenu(true);
-        
-        // TODO (fwild): Initialize the map stuff
+
+        // Initialize the map stuff
+        if (this.mMap == null)
+        {
+            // Try to obtain the map from the SupportMapFragment of the activity
+            this.mMap = ((SupportMapFragment) this.getActivity().getSupportFragmentManager().findFragmentById(R.id.map)).getMap();
+            // Check if we were successful in obtaining the map
+            if (this.mMap != null)
+            {
+                this.setUpMap();
+            }
+        }
     }
 
     /* (non-Javadoc)
@@ -36,6 +51,7 @@ public class NomNomMapFragment extends Fragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
         View view = inflater.inflate(R.layout.layout_map, container, false);
+
         return view;
     }
 
@@ -72,4 +88,13 @@ public class NomNomMapFragment extends Fragment
 
         return super.onOptionsItemSelected(item);
     }
+
+    /**
+     * Util method to setup the map
+     */
+    private void setUpMap()
+    {
+        this.mMap.setMyLocationEnabled(true);
+    }
+
 }
