@@ -25,6 +25,7 @@ import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.AsyncTask;
+import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -141,10 +142,14 @@ public class NomNomUpdater
                 String googleUrl = createUrl(lastPositionArray[0], MILE_IN_METERS, WANTED_CATEGORY, GOOGLE_API_KEY);
                 // Request the json from the google API
                 String json = requestJson(googleUrl);
-                Log.d(NomNomActivity.TAG, json);
+                
+                if (!TextUtils.isEmpty(json))
+                {
+                    Log.d(NomNomActivity.TAG, json);
 
-                // Read the data that shall be shown and store it via ContentResolver
-                storePlacesViaContentResolver(json);
+                    // Read the data that shall be shown and store it via ContentResolver
+                    storePlacesViaContentResolver(json);
+                }
             }
             return null;
         }

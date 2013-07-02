@@ -4,4 +4,8 @@
     <dimen name="default_horizontal_margin">16dp</dimen>
     <dimen name="default_vertical_margin">16dp</dimen>
 
+    <!-- Different font sizes -->
+    <dimen name="font_large_size">22sp</dimen>
+    <dimen name="font_med_size">16sp</dimen>
+    
 </resources>

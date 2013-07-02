@@ -62,7 +62,7 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper
     public static final String   SQL_DROP         = "DROP TABLE IF EXISTS " + TABLE_NAME;
 
     /** The default sort order to use for the table */
-    public static final String DEFAULT_SORT_ORDER = COLUMN_ID + "DESC";
+    public static final String DEFAULT_SORT_ORDER = COLUMN_ID + " DESC";
 
     /**
      * Simple constructor. 
