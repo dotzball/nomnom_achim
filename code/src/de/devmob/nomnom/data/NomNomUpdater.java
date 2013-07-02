@@ -14,8 +14,12 @@ import org.apache.http.StatusLine;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import android.app.Activity;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.location.Criteria;
 import android.location.Location;
@@ -24,6 +28,8 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
+
+import de.devmob.nomnom.NomNomActivity;
 
 /**
  * Class to handle location updates and request restaurants via 
@@ -90,7 +96,7 @@ public class NomNomUpdater
         else
         {
             LatLng lastLatLng = new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude());
-            mRunningTask = new RestaurantUpdateTask();
+            mRunningTask = new RestaurantUpdateTask(activity);
             mRunningTask.execute(lastLatLng);
         }
     }
@@ -110,6 +116,18 @@ public class NomNomUpdater
         /** Constant of one mile in meters */
         private static final double MILE_IN_METERS = 1609.344;
 
+        /** The context the asyncTask is started from */
+        private Activity            mActivity;
+
+        /**
+         * Constructor providing an activity context
+         * @param activity
+         */
+        public RestaurantUpdateTask(Activity activity)
+        {
+            this.mActivity = activity;
+        }
+
         /* (non-Javadoc)
          * @see android.os.AsyncTask#doInBackground(Params[])
          */
@@ -117,13 +135,19 @@ public class NomNomUpdater
         protected Void doInBackground(LatLng... lastPositionArray)
         {
             if (lastPositionArray.length > 0)
-            {                
+            {
+                // Construct the url
                 String googleUrl = createUrl(lastPositionArray[0], MILE_IN_METERS, WANTED_CATEGORY, GOOGLE_API_KEY);
+                // Request the json from the google API
                 String json = requestJson(googleUrl);
-                Log.i("NOMNOM", json);
+                Log.d(NomNomActivity.TAG, json);
+
+                // Read the data that shall be shown and store it via ContentResolver
+                storePlacesViaContentResolver(json);
             }
             return null;
         }
+
 
         /* (non-Javadoc)
          * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
@@ -229,6 +253,71 @@ public class NomNomUpdater
             }
 
             return null;
+        }
+
+        /**
+         * Util method to read from a given json string
+         * the information that shall be shown as NomNoms and 
+         * store it through the ContentProvider for persistence and notifying update listeners.
+         * @param json
+         */
+        private void storePlacesViaContentResolver(String json)
+        {
+            ContentResolver contentResolver = this.mActivity.getContentResolver();
+            
+            // Pre-Define the index in case an error occurs
+            int index = -1;
+            
+            try
+            {
+                JSONObject object = new JSONObject(json);
+    
+                // All the places of the result are stored in a results list
+                JSONArray resultPlaces = object.getJSONArray("results");
+    
+                // Clear the content provider first, to not merge old and new results
+                contentResolver.delete(NomNomContentProvider.CONTENT_URI, null, null);
+    
+                // Process each place
+                for (index = 0; index < resultPlaces.length(); index++)
+                {
+                    JSONObject currentPlace = (JSONObject) resultPlaces.get(index);
+    
+                    // Create a contentVaues object for the current place
+                    ContentValues values = new ContentValues();
+    
+                    // Retrieve base information
+                    values.put(DatabaseOpenHelper.COLUMN_NAME, currentPlace.getString("name"));
+                    values.put(DatabaseOpenHelper.COLUMN_GID, currentPlace.getString("id"));
+
+                    // Read the optional rating value
+                    String ratingValue;
+                    if (currentPlace.has("rating"))
+                    {
+                        ratingValue = currentPlace.getString("rating");
+                    }
+                    else
+                    {
+                        // Provide null as an alternative
+                        ratingValue = null;
+                    }
+                    values.put(DatabaseOpenHelper.COLUMN_RATING, ratingValue);
+    
+                    // Retrieve the location
+                    JSONObject geometry = (JSONObject) currentPlace.get("geometry");
+                    JSONObject location = (JSONObject) geometry.get("location");
+                    values.put(DatabaseOpenHelper.COLUMN_LATITUDE, (Double) location.get("lat"));
+                    values.put(DatabaseOpenHelper.COLUMN_LONGITUDE, (Double) location.get("lng"));
+    
+                    // Insert to content resolver
+                    contentResolver.insert(NomNomContentProvider.CONTENT_URI, values);
+                }
+            }
+            catch (Exception e)
+            {
+                Log.e(NomNomActivity.TAG, "Error reading/storing the json " + (index == -1 ? "" : "with entry " + index));
+                e.printStackTrace();
+            }
         }
     }
 }
