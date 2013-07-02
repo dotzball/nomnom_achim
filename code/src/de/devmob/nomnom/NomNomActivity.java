@@ -17,6 +17,9 @@ import de.devmob.nomnom.data.NomNomUpdater;
  */
 public class NomNomActivity extends FragmentActivity
 {
+    /** Share tag for logging */
+    public static final String TAG = "NomNom";
+
     private static final String MAP_CLASS = NomNomMapFragment.class.getName();
     private static final String LIST_CLASS = NomNomListFragment.class.getName();
 
@@ -27,6 +30,7 @@ public class NomNomActivity extends FragmentActivity
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+        // Initialize the view
         this.setContentView(R.layout.layout_one_fragment);
 
         if (savedInstanceState == null)
