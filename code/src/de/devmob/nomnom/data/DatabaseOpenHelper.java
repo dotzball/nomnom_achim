@@ -24,7 +24,7 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper
     /** The table name to use */
     public static final String   TABLE_NAME       = "nomnoms";
 
-    /** The id of the database entry */
+    /** The id of the database entry. This is keeping the original order from the API response and always starts at zero */
     public static final String   COLUMN_ID        = BaseColumns._ID;
     /** The name of the place */
     public static final String   COLUMN_NAME      = "name";
@@ -40,29 +40,39 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper
     public static final String   COLUMN_LATITUDE  = "latitude";
     /** The longitude of the position */
     public static final String   COLUMN_LONGITUDE = "longitude";
+    /** Flag to mark an entry as valid for viewing. See VALUE_* */
+    public static final String   COLUMN_IS_SET    = "isSet";
+    
+    /** Integer constant to store true */
+    public static final int      VALUE_TRUE       = 1;
+    /** Integer constant to store false */
+    public static final int      VALUE_FALSE      = 0;
     
     /** List of all available columns for a projection of our database */
     public static final String[] PROJECTION_ALL   = 
-        { COLUMN_ID, COLUMN_NAME, COLUMN_GID, COLUMN_GREF, COLUMN_VICINITY, COLUMN_RATING, COLUMN_LATITUDE, COLUMN_LONGITUDE };
+        { COLUMN_ID, COLUMN_NAME, COLUMN_GID, COLUMN_GREF, COLUMN_VICINITY, COLUMN_RATING, COLUMN_LATITUDE, COLUMN_LONGITUDE, COLUMN_IS_SET };
 
     /** Select all entries */
     public static final String   SQL_SELECT_ALL   = "SELECT * FROM " + TABLE_NAME;
     /** Create table */
     public static final String   SQL_CREATE       = "CREATE TABLE " + TABLE_NAME + " ("
-                                                     + COLUMN_ID + " integer primary key autoincrement,"
-                                                     + COLUMN_NAME + " text" + " not null, "
-                                                     + COLUMN_GID + " text" + " not null, "
-                                                     + COLUMN_GREF + " text" + " not null, "
-                                                     + COLUMN_VICINITY + " text" + ", " // Vicinity may not be available
-                                                     + COLUMN_RATING + " real" + ", "   // Rating may not be available
-                                                     + COLUMN_LATITUDE + " real" + " not null, "
-                                                     + COLUMN_LONGITUDE + " real" + " not null "
+                                                     + COLUMN_ID + " integer primary key," // Manage the primary manually. Always around 20 entries, no need to create new ids each request
+                                                     + COLUMN_NAME + " text not null, "
+                                                     + COLUMN_GID + " text not null, "
+                                                     + COLUMN_GREF + " text not null, "
+                                                     + COLUMN_VICINITY + " text, " // Vicinity may not be available
+                                                     + COLUMN_RATING + " real, "   // Rating may not be available
+                                                     + COLUMN_LATITUDE + " real not null, "
+                                                     + COLUMN_LONGITUDE + " real not null,"
+                                                     + COLUMN_IS_SET + " integer not null"
                                                      + ")";
     /** Drop the table */
     public static final String   SQL_DROP         = "DROP TABLE IF EXISTS " + TABLE_NAME;
 
-    /** The default sort order to use for the table */
-    public static final String DEFAULT_SORT_ORDER = COLUMN_ID + " DESC";
+    public static final String   VISIBILITY_CHECK = DatabaseOpenHelper.COLUMN_IS_SET + "= " + DatabaseOpenHelper.VALUE_TRUE;
+    
+    /** The default sort order to use for the table. Increase the id to get the same order again */
+    public static final String   DEFAULT_SORT_ORDER = COLUMN_ID + " ASC";
 
     /**
      * Simple constructor. 

@@ -283,14 +283,18 @@ public class NomNomUpdater
                 // If ok or no results we delete the old list and read (if available) the results
                 if (status.equals("OK") || status.equals("ZERO_RESULTS"))
                 {
-                    // Clear the content provider first, to not merge old and new results
-                    contentResolver.delete(NomNomContentProvider.CONTENT_URI, null, null);
+                    // Mark all existing entries as not valid anymore.
+                    // This way it's possible to have less entries for a future request then stored before.
+                    // With the re-usage we do not need to delete and insert lines over and over again, 
+                    // but re-use the before created upto 20 entries (found on one google api response page)
+                    ContentValues resetValues = new ContentValues();
+                    resetValues.put(DatabaseOpenHelper.COLUMN_IS_SET, DatabaseOpenHelper.VALUE_FALSE);
+                    contentResolver.update(NomNomContentProvider.CONTENT_URI, resetValues, null, null);
 
                     if (status.equals("OK"))
                     {
                         // All the places of the result are stored in a results list
                         JSONArray resultPlaces = object.getJSONArray("results");
-
 
                         // Process each place
                         for (index = 0; index < resultPlaces.length(); index++)
@@ -300,6 +304,9 @@ public class NomNomUpdater
                             // Create a contentVaues object for the current place
                             ContentValues values = new ContentValues();
                             
+                            // Store the index in the json for sorting. This way previous search-results will be overwriten 
+                            values.put(DatabaseOpenHelper.COLUMN_ID, index);
+
                             // Retrieve base information
                             values.put(DatabaseOpenHelper.COLUMN_NAME, currentPlace.getString("name"));
                             values.put(DatabaseOpenHelper.COLUMN_GID, currentPlace.getString("id"));
@@ -336,7 +343,10 @@ public class NomNomUpdater
                             JSONObject location = (JSONObject) geometry.get("location");
                             values.put(DatabaseOpenHelper.COLUMN_LATITUDE, location.getDouble("lat"));
                             values.put(DatabaseOpenHelper.COLUMN_LONGITUDE, location.getDouble("lng"));
-            
+
+                            // Mark this entry as real
+                            values.put(DatabaseOpenHelper.COLUMN_IS_SET, DatabaseOpenHelper.VALUE_TRUE);
+
                             // Insert to content resolver
                             contentResolver.insert(NomNomContentProvider.CONTENT_URI, values);
                         }

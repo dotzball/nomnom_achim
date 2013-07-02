@@ -92,7 +92,7 @@ public class NomNomListFragment extends ListFragment implements LoaderManager.Lo
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args)
     {
-        // Creates a new loader after the initLoader () call - In addition add the check if the entry shall be shown and is NOT the current location, cause that one shall not be shown in the list
+        // Creates a new loader after the initLoader () call
         CursorLoader cursorLoader = new CursorLoader(
                                     this.getActivity(), NomNomContentProvider.CONTENT_URI, 
                                     DatabaseOpenHelper.PROJECTION_ALL, 

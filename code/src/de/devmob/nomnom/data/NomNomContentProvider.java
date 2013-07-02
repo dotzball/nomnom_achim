@@ -118,6 +118,9 @@ public class NomNomContentProvider extends ContentProvider
         // Set the table
         queryBuilder.setTables(DatabaseOpenHelper.TABLE_NAME);
 
+        // Adding the visibility check to the original query in any case
+        queryBuilder.appendWhere(DatabaseOpenHelper.VISIBILITY_CHECK);
+
         // Add the details part if needed
         switch (sURIMatcher.match(uri))
         {
@@ -172,7 +175,8 @@ public class NomNomContentProvider extends ContentProvider
             case NOMS:
             {
                 id = this.mDBAdapter.getWritableDatabase().insertWithOnConflict(
-                        DatabaseOpenHelper.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_IGNORE);
+                        DatabaseOpenHelper.TABLE_NAME, null, values, 
+                        SQLiteDatabase.CONFLICT_REPLACE); // Let older versions be replaced!
             } break;
 
             default:
@@ -181,8 +185,9 @@ public class NomNomContentProvider extends ContentProvider
             }
         }
 
-        // Check if successful
-        if (id > 0)
+        // Check if successful.
+        // NOTE: Using the array index as id, zero is valid too. With autoincrement ids start at 1
+        if (id >= 0)
         {
             // Creates a URI with the note ID pattern and the new row ID appended to it.
             Uri newUri = ContentUris.withAppendedId(CONTENT_ID_URI, id);
