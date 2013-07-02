@@ -28,9 +28,13 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper
     public static final String   COLUMN_ID        = BaseColumns._ID;
     /** The name of the place */
     public static final String   COLUMN_NAME      = "name";
-    /** The google id, helpful if one wants to do a follow-up call to show details */
+    /** The google id, can be used to compare search results for same locations */
     public static final String   COLUMN_GID       = "googleid";
-    /** The rating */
+    /** The google reference token, helpful if one wants to do a follow-up call to show details */
+    public static final String   COLUMN_GREF      = "reference";
+    /** The address or neighborhood (if available) */
+    public static final String   COLUMN_VICINITY  = "vicinity";
+    /** The rating by users between 0.0 and 5.0 (if available) */
     public static final String   COLUMN_RATING    = "rating";
     /** The latitude of the position */
     public static final String   COLUMN_LATITUDE  = "latitude";
@@ -39,7 +43,7 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper
     
     /** List of all available columns for a projection of our database */
     public static final String[] PROJECTION_ALL   = 
-        { COLUMN_ID, COLUMN_NAME, COLUMN_GID, COLUMN_RATING, COLUMN_LATITUDE, COLUMN_LONGITUDE };
+        { COLUMN_ID, COLUMN_NAME, COLUMN_GID, COLUMN_GREF, COLUMN_VICINITY, COLUMN_RATING, COLUMN_LATITUDE, COLUMN_LONGITUDE };
 
     /** Select all entries */
     public static final String   SQL_SELECT_ALL   = "SELECT * FROM " + TABLE_NAME;
@@ -48,7 +52,9 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper
                                                      + COLUMN_ID + " integer primary key autoincrement,"
                                                      + COLUMN_NAME + " text" + " not null, "
                                                      + COLUMN_GID + " text" + " not null, "
-                                                     + COLUMN_RATING + " text" + ", " // Rating may not be available
+                                                     + COLUMN_GREF + " text" + " not null, "
+                                                     + COLUMN_VICINITY + " text" + ", " // Vicinity may not be available
+                                                     + COLUMN_RATING + " real" + ", "   // Rating may not be available
                                                      + COLUMN_LATITUDE + " real" + " not null, "
                                                      + COLUMN_LONGITUDE + " real" + " not null "
                                                      + ")";

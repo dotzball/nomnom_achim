@@ -26,6 +26,7 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.model.LatLng;
 
@@ -271,46 +272,78 @@ public class NomNomUpdater
             try
             {
                 JSONObject object = new JSONObject(json);
-    
-                // All the places of the result are stored in a results list
-                JSONArray resultPlaces = object.getJSONArray("results");
-    
-                // Clear the content provider first, to not merge old and new results
-                contentResolver.delete(NomNomContentProvider.CONTENT_URI, null, null);
-    
-                // Process each place
-                for (index = 0; index < resultPlaces.length(); index++)
-                {
-                    JSONObject currentPlace = (JSONObject) resultPlaces.get(index);
-    
-                    // Create a contentVaues object for the current place
-                    ContentValues values = new ContentValues();
-    
-                    // Retrieve base information
-                    values.put(DatabaseOpenHelper.COLUMN_NAME, currentPlace.getString("name"));
-                    values.put(DatabaseOpenHelper.COLUMN_GID, currentPlace.getString("id"));
 
-                    // Read the optional rating value
-                    String ratingValue;
-                    if (currentPlace.has("rating"))
+                String status = object.getString("status");
+
+                // If ok or no results we delete the old list and read (if available) the results
+                if (status.equals("OK") || status.equals("ZERO_RESULTS"))
+                {
+                    // Clear the content provider first, to not merge old and new results
+                    contentResolver.delete(NomNomContentProvider.CONTENT_URI, null, null);
+
+                    if (status.equals("OK"))
                     {
-                        ratingValue = currentPlace.getString("rating");
+                        // All the places of the result are stored in a results list
+                        JSONArray resultPlaces = object.getJSONArray("results");
+
+
+                        // Process each place
+                        for (index = 0; index < resultPlaces.length(); index++)
+                        {
+                            JSONObject currentPlace = (JSONObject) resultPlaces.get(index);
+                            
+                            // Create a contentVaues object for the current place
+                            ContentValues values = new ContentValues();
+                            
+                            // Retrieve base information
+                            values.put(DatabaseOpenHelper.COLUMN_NAME, currentPlace.getString("name"));
+                            values.put(DatabaseOpenHelper.COLUMN_GID, currentPlace.getString("id"));
+                            values.put(DatabaseOpenHelper.COLUMN_GREF, currentPlace.getString("reference"));
+                            
+                            // Read the optional vicinity value
+                            String vicinityValue;
+                            if (currentPlace.has("vicinity"))
+                            {
+                                vicinityValue = currentPlace.getString("vicinity");
+                            }
+                            else
+                            {
+                                // Provide null as an alternative
+                                vicinityValue = null;
+                            }
+                            values.put(DatabaseOpenHelper.COLUMN_VICINITY, vicinityValue);
+                            
+                            // Read the optional rating value
+                            Double ratingValue;
+                            if (currentPlace.has("rating"))
+                            {
+                                ratingValue = currentPlace.getDouble("rating");
+                            }
+                            else
+                            {
+                                // Provide null as an alternative
+                                ratingValue = null;
+                            }
+                            values.put(DatabaseOpenHelper.COLUMN_RATING, ratingValue);
+                            
+                            // Retrieve the location
+                            JSONObject geometry = (JSONObject) currentPlace.get("geometry");
+                            JSONObject location = (JSONObject) geometry.get("location");
+                            values.put(DatabaseOpenHelper.COLUMN_LATITUDE, location.getDouble("lat"));
+                            values.put(DatabaseOpenHelper.COLUMN_LONGITUDE, location.getDouble("lng"));
+            
+                            // Insert to content resolver
+                            contentResolver.insert(NomNomContentProvider.CONTENT_URI, values);
+                        }
                     }
-                    else
-                    {
-                        // Provide null as an alternative
-                        ratingValue = null;
-                    }
-                    values.put(DatabaseOpenHelper.COLUMN_RATING, ratingValue);
-    
-                    // Retrieve the location
-                    JSONObject geometry = (JSONObject) currentPlace.get("geometry");
-                    JSONObject location = (JSONObject) geometry.get("location");
-                    values.put(DatabaseOpenHelper.COLUMN_LATITUDE, (Double) location.get("lat"));
-                    values.put(DatabaseOpenHelper.COLUMN_LONGITUDE, (Double) location.get("lng"));
-    
-                    // Insert to content resolver
-                    contentResolver.insert(NomNomContentProvider.CONTENT_URI, values);
+                }
+                else
+                {
+                    // Fast hack to give the error information to the user
+                    Toast.makeText(
+                            this.mActivity,
+                            "Retrieving the places around you failed. Please try later (Status=" + status + ")", 
+                            Toast.LENGTH_LONG).show();
                 }
             }
             catch (Exception e)
