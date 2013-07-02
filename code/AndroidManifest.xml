@@ -52,7 +52,7 @@
 
         <provider
             android:name=".data.NomNomContentProvider"
-            android:authorities="de.devmob.nomnom.data.NomNomContentProvider"
+            android:authorities="de.devmob.nomnom.contentprovider"
             android:exported="false"
             />
 

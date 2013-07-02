@@ -33,13 +33,13 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper
     /** The rating */
     public static final String   COLUMN_RATING    = "rating";
     /** The latitude of the position */
-    public static final String   COLUMN_LAT       = "lat";
+    public static final String   COLUMN_LATITUDE  = "latitude";
     /** The longitude of the position */
-    public static final String   COLUMN_LNG       = "lng";
+    public static final String   COLUMN_LONGITUDE = "longitude";
     
     /** List of all available columns for a projection of our database */
     public static final String[] PROJECTION_ALL   = 
-        { COLUMN_ID, COLUMN_NAME, COLUMN_GID, COLUMN_RATING, COLUMN_LAT, COLUMN_LNG };
+        { COLUMN_ID, COLUMN_NAME, COLUMN_GID, COLUMN_RATING, COLUMN_LATITUDE, COLUMN_LONGITUDE };
 
     /** Select all entries */
     public static final String   SQL_SELECT_ALL   = "SELECT * FROM " + TABLE_NAME;
@@ -48,9 +48,9 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper
                                                      + COLUMN_ID + " integer primary key autoincrement,"
                                                      + COLUMN_NAME + " text" + " not null, "
                                                      + COLUMN_GID + " text" + " not null, "
-                                                     + COLUMN_RATING + " text" + " not null "
-                                                     + COLUMN_LAT + " real" + " not null "
-                                                     + COLUMN_LNG + " real" + " not null "
+                                                     + COLUMN_RATING + " text" + ", " // Rating may not be available
+                                                     + COLUMN_LATITUDE + " real" + " not null, "
+                                                     + COLUMN_LONGITUDE + " real" + " not null "
                                                      + ")";
     /** Drop the table */
     public static final String   SQL_DROP         = "DROP TABLE IF EXISTS " + TABLE_NAME;
