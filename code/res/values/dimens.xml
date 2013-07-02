@@ -4,8 +4,14 @@
     <dimen name="default_horizontal_margin">16dp</dimen>
     <dimen name="default_vertical_margin">16dp</dimen>
 
+    <!-- Define some offsets for the rating display -->
+    <dimen name="rating_horizontal_padding">6dp</dimen>
+    <dimen name="rating_vertical_padding">4dp</dimen>
+    <dimen name="rating_corners">4dp</dimen>
+
     <!-- Different font sizes -->
-    <dimen name="font_large_size">22sp</dimen>
+    <dimen name="font_large_size">20sp</dimen>
     <dimen name="font_med_size">16sp</dimen>
+    <dimen name="font_small_size">13sp</dimen>
     
 </resources>

@@ -9,11 +9,13 @@ import android.support.v4.app.ListFragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.widget.SimpleCursorAdapter;
+import android.support.v4.widget.SimpleCursorAdapter.ViewBinder;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import de.devmob.nomnom.adapter.NomNomListAdapter;
+import android.widget.TextView;
 import de.devmob.nomnom.data.DatabaseOpenHelper;
 import de.devmob.nomnom.data.NomNomContentProvider;
 
@@ -22,10 +24,10 @@ import de.devmob.nomnom.data.NomNomContentProvider;
  * 
  * @author Friederike Wild
  */
-public class NomNomListFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor>
+public class NomNomListFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor>, ViewBinder
 {
     /** Store a reference to the list adapter */
-    private NomNomListAdapter mAdapter;
+    private SimpleCursorAdapter mAdapter;
     
     /* (non-Javadoc)
      * @see android.support.v4.app.Fragment#onActivityCreated(android.os.Bundle)
@@ -123,19 +125,73 @@ public class NomNomListFragment extends ListFragment implements LoaderManager.Lo
      */
     private void initAdapter()
     {
-        // Fields from the database (projection)
-        // Must include the _id column for the adapter to work
+        // List of columns in the cursor with data to show.
         String[] from = new String[] { DatabaseOpenHelper.COLUMN_NAME, DatabaseOpenHelper.COLUMN_VICINITY, DatabaseOpenHelper.COLUMN_RATING };
-        // Fields on the UI to which we map
+        // List of views in the layout in the same order as the from parameter
         int[] to = new int[] { R.id.textName, R.id.textVicinity, R.id.textRating };
 
         // Initialize the loader manager to start listening to cursor changes
         this.getLoaderManager().initLoader(0, null, this);
-        mAdapter = new NomNomListAdapter(
-                this.getActivity(), R.layout.layout_list_entry, 
+        mAdapter = new SimpleCursorAdapter(
+                this.getActivity(), 
+                R.layout.layout_list_entry, // The context to which the list belongs 
                 null, // Initialize the adapter without a valid cursor. Will be swaped when ready
                 from, to, 0);
+        
+        // Assign an additional binder for special handling
+        mAdapter.setViewBinder(this);
 
         setListAdapter(mAdapter);
+    }
+
+    /* (non-Javadoc)
+     * @see android.support.v4.widget.SimpleCursorAdapter.ViewBinder#setViewValue(android.view.View, android.database.Cursor, int)
+     */
+    @Override
+    public boolean setViewValue(View view, Cursor cursor, int columnIndex)
+    {
+        // With the rating we want to bind the value in addition as a colour code
+        String columnName = cursor.getColumnName(columnIndex);
+        if (columnName.equals(DatabaseOpenHelper.COLUMN_RATING))
+        {
+            if (cursor.isNull(columnIndex))
+            {
+                // Hide the rating view if not available
+                view.setVisibility(View.GONE);
+            }
+            else
+            {
+                view.setVisibility(View.VISIBLE);
+
+                double ratingValue = cursor.getDouble(columnIndex);
+
+                // Pick a colour shape with rounded corners according to the rating 
+                int backgroundResourceId;
+                if (ratingValue <= 2)
+                {
+                    backgroundResourceId = R.drawable.shape_rounded_red;
+                }
+                else if (ratingValue >= 4)
+                {
+                    backgroundResourceId = R.drawable.shape_rounded_green;
+                }
+                else
+                {
+                    backgroundResourceId = R.drawable.shape_rounded_grey;
+                }
+                view.setBackgroundResource(backgroundResourceId);
+                
+                if (view instanceof TextView)
+                {
+                    ((TextView)view).setText(String.valueOf(ratingValue));
+                }
+            }
+
+            // Mark that a binding has occured
+            return true;
+        }
+
+        // For all other columns we let the simple cursor adapter handle the binding
+        return false;
     }
 }

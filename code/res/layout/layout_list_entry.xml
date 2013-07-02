@@ -1,34 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Give each row the outer offset to have some space towards the line seperators -->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    
+    android:paddingBottom="@dimen/default_vertical_margin"
+    android:paddingLeft="@dimen/default_horizontal_margin"
+    android:paddingRight="@dimen/default_horizontal_margin"
+    android:paddingTop="@dimen/default_vertical_margin"
     >
 
-    <TextView
-        android:id="@+id/textRating"
-         
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        
-        android:layout_alignTop="@+id/boxInfo"
-        android:layout_alignBottom="@+id/boxInfo"
-        android:gravity="left|center_vertical"
-        
-        android:textSize="@dimen/font_med_size"
-        
-        android:text="rat"
-        />
-
+    <!-- Box up all the entries. This will later allow the icon to be placed left of it -->
     <RelativeLayout
         android:id="@+id/boxInfo"
 	    android:layout_width="match_parent"
 	    android:layout_height="wrap_content"
-	    
-	    android:layout_toRightOf="@id/textRating"
+
 	    android:gravity="left|center_vertical"
-	    android:layout_marginLeft="@dimen/default_horizontal_margin"
 	    >
 	    
+        <!-- The name shall be the biggest text -->
 	    <TextView
 	        android:id="@+id/textName"
 	         
@@ -37,21 +28,63 @@
 	        
 	        android:textStyle="bold"
 	        android:textSize="@dimen/font_large_size"
+	        android:textColor="@color/text_dark"
 	        
-	        android:text="name"
+	        android:text="@string/app_name"
 	        />
-	
+
+	    <!-- 
+	         Rating textview gets a shaped background according to the value by the adapter
+	         Different vertical & horizontal paddings to have a nice weighted look 
+	         and the text has an offset to the background.
+	     -->
+	    <TextView
+	        android:id="@+id/textRating"
+	        
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        
+	        android:layout_below="@id/textName"
+	        android:layout_alignParentLeft="true"
+	        
+	        android:paddingTop="@dimen/rating_vertical_padding"
+	        android:paddingBottom="@dimen/rating_vertical_padding"
+	        android:paddingLeft="@dimen/rating_horizontal_padding"
+	        android:paddingRight="@dimen/rating_horizontal_padding"
+	        
+	        android:layout_marginRight="@dimen/rating_horizontal_padding"
+	        
+	        android:textSize="@dimen/font_small_size"
+	        android:textColor="@color/text_cream_white"
+	        
+	        android:text="@string/app_name"
+	        />
+
+	    <!-- 
+	       The vicinity is placed left to the rating
+	       The heihgt is adjusted to follow the rating text 
+	       to have the text gravity center it matching to the different font sized rating
+	       In case the rating is missing the vicinity is aligned with the parent instead.
+	     -->
 	    <TextView
 	        android:id="@+id/textVicinity"
-	         
+	        
 	        android:layout_width="wrap_content"
 	        android:layout_height="wrap_content"
 	        
             android:layout_below="@id/textName"
+            android:layout_toRightOf="@id/textRating"
+            
+            android:layout_alignBottom="@id/textRating"
+            
+            android:gravity="left|center_vertical"
+            
+            android:layout_alignWithParentIfMissing="true"
 	        
 	        android:textSize="@dimen/font_med_size"
+	        android:textColor="@color/text_dark"
 	        
-	        android:text="vicinity"
+	        android:text="@string/app_name"
 	        />
 
 	</RelativeLayout>
