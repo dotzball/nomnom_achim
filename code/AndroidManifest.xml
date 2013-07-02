@@ -50,6 +50,12 @@
             </intent-filter>
         </activity>
 
+        <provider
+            android:name=".data.NomNomContentProvider"
+            android:authorities="de.devmob.nomnom.data.NomNomContentProvider"
+            android:exported="false"
+            />
+
     </application>
 
 </manifest>
