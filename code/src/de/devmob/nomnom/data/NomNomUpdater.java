@@ -79,11 +79,10 @@ public class NomNomUpdater implements LocationListener
     }
 
     /**
-     * Method to call during start to check for an available location.
-     * If non available we trigger to get informed as soon as one comes up.
+     * Method to call during activity creation to check for an available location.
      * @param activity
      */
-    public void onActivityResume(Activity activity)
+    public void onActivityCreate(Activity activity)
     {
         this.mActivity = activity;
 
@@ -93,15 +92,33 @@ public class NomNomUpdater implements LocationListener
         String provider = this.mLocationManager.getBestProvider(new Criteria(), false);
         Location lastLocation = this.mLocationManager.getLastKnownLocation(provider);
         
-        if (lastLocation == null)
+        LatLng lastLatLng = new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude());
+        updatePlacesForLocation(lastLatLng);
+    }
+
+    /**
+     * Method to call during start to check for an available location.
+     * If non available we trigger to get informed as soon as one comes up.
+     * @param activity
+     */
+    public void onActivityResume()
+    {
+        // Let the system decide on the best provider
+        String provider = this.mLocationManager.getBestProvider(new Criteria(), false);
+
+        // Register for location updates every 30secs and when the user moves around 100 meters
+        this.mLocationManager.requestLocationUpdates(provider, 30000, 100, this);
+    }
+
+    /**
+     * Method to call during pausing the activity.
+     */
+    public void onActivityPause()
+    {
+        // Remove the location listener again
+        if (this.mLocationManager != null)
         {
-            // Register for location updates every 30secs and when the user moves around 100 meters
-            this.mLocationManager.requestLocationUpdates(provider, 30000, 100, this);
-        }
-        else
-        {
-            LatLng lastLatLng = new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude());
-            updatePlacesForLocation(lastLatLng);
+            this.mLocationManager.removeUpdates(this);
         }
     }
 

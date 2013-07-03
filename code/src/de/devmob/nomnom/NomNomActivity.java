@@ -44,6 +44,9 @@ public class NomNomActivity extends FragmentActivity
             // Commit the transaction
             fragmentTransaction.commit();
         }
+        
+        // Check for updates of places near the current location.
+        NomNomUpdater.getInstance().onActivityCreate(this);
     }
 
     /* (non-Javadoc)
@@ -54,8 +57,19 @@ public class NomNomActivity extends FragmentActivity
     {
         super.onResume();
 
-        // Check for updates of places near the current location.
-        NomNomUpdater.getInstance().onActivityResume(this);
+        // Register for updates of places near the current location.
+        NomNomUpdater.getInstance().onActivityResume();
+    }
+
+    /* (non-Javadoc)
+     * @see android.support.v4.app.FragmentActivity#onPause()
+     */
+    @Override
+    protected void onPause()
+    {
+        NomNomUpdater.getInstance().onActivityPause();
+
+        super.onPause();
     }
 
     /**
