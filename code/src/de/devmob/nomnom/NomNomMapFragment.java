@@ -22,6 +22,8 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMapOptions;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.LatLngBounds.Builder;
@@ -203,6 +205,8 @@ public class NomNomMapFragment extends Fragment implements LoaderManager.LoaderC
         int columnLatitudeId = data.getColumnIndex(DatabaseOpenHelper.COLUMN_LATITUDE);
         int columnLongitudeId = data.getColumnIndex(DatabaseOpenHelper.COLUMN_LONGITUDE);
         
+        BitmapDescriptor icon = BitmapDescriptorFactory.fromResource(R.drawable.pin_nom);
+        
         // Step through the cursor
         do
         {
@@ -220,6 +224,10 @@ public class NomNomMapFragment extends Fragment implements LoaderManager.LoaderC
             marker.position(position);
             boundsBuilder.include(position);
             
+            // Add our nomnom map pin
+            marker.icon(icon);
+            
+            // Markers shall not be draggable
             marker.draggable(false);
 
             // Add the marker to the map
