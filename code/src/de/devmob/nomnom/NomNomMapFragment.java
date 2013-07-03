@@ -149,12 +149,20 @@ public class NomNomMapFragment extends Fragment implements LoaderManager.LoaderC
         // Remove any old markers and overlays
         this.mMap.clear();
 
-        // Step through the cursor
+        if (data == null || data.isClosed())
+        {
+            // The cursor can be closed for various reasons, most likely cause some new data is currently written to it.
+            // Therefore ignore call and wait for the next update
+            Log.w(NomNomActivity.TAG, "onLoadFinished received a closed cursor. Ignoring new data. ");
+            return;
+        }
+        
+        // Prepare the cursor to read the first entry.
         boolean cursorFilled = data.moveToFirst();
 
         if (!cursorFilled)
         {
-            Log.w(NomNomActivity.TAG, "onLoadFinished received an empty cursor. " + data.getCount());
+            Log.w(NomNomActivity.TAG, "onLoadFinished received an empty cursor (count= " + data.getCount() + "). Ignoring new data.");
             return;
         }
 
@@ -167,6 +175,7 @@ public class NomNomMapFragment extends Fragment implements LoaderManager.LoaderC
         int columnLatitudeId = data.getColumnIndex(DatabaseOpenHelper.COLUMN_LATITUDE);
         int columnLongitudeId = data.getColumnIndex(DatabaseOpenHelper.COLUMN_LONGITUDE);
         
+        // Step through the cursor
         do
         {
             // Create marker
@@ -231,6 +240,13 @@ public class NomNomMapFragment extends Fragment implements LoaderManager.LoaderC
     public void onLoaderReset(Loader<Cursor> loader)
     {
         // Data is not available anymore.
-        // TODO: Ignored for now. Remove any markers and close mLastCursor
+        // Remove any markers and close mLastCursor
+        this.mMap.clear();
+        
+        // Close the old cursor and save the just received one
+        if (mLastCursor != null)
+        {
+            mLastCursor.close();
+        }
     }
 }
