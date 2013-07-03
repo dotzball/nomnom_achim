@@ -11,6 +11,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -141,12 +142,21 @@ public class NomNomMapFragment extends Fragment implements LoaderManager.LoaderC
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data)
     {
+        // Remove any old markers and overlays
+        this.mMap.clear();
+
+        // Step through the cursor
+        boolean cursorFilled = data.moveToFirst();
+
+        if (!cursorFilled)
+        {
+            Log.w(NomNomActivity.TAG, "onLoadFinished received an empty cursor. " + data.getCount());
+            return;
+        }
+
         // Create object to collect the bounds
         Builder boundsBuilder = new LatLngBounds.Builder();
-        
-        // Step through the cursor
-        data.moveToFirst();
-        
+
         // Get column indices for the needed entries
         int columnNameId = data.getColumnIndex(DatabaseOpenHelper.COLUMN_NAME);
         int columnVicinityId = data.getColumnIndex(DatabaseOpenHelper.COLUMN_VICINITY);
