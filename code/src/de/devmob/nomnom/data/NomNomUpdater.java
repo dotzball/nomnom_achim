@@ -283,19 +283,18 @@ public class NomNomUpdater
                 // If ok or no results we delete the old list and read (if available) the results
                 if (status.equals("OK") || status.equals("ZERO_RESULTS"))
                 {
-                    // Mark all existing entries as not valid anymore.
-                    // This way it's possible to have less entries for a future request then stored before.
-                    // With the re-usage we do not need to delete and insert lines over and over again, 
-                    // but re-use the before created upto 20 entries (found on one google api response page)
-                    ContentValues resetValues = new ContentValues();
-                    resetValues.put(DatabaseOpenHelper.COLUMN_IS_SET, DatabaseOpenHelper.VALUE_FALSE);
-                    contentResolver.update(NomNomContentProvider.CONTENT_URI, resetValues, null, null);
-
+                    // Prepare an array to contain the ContentValues for all entries
+                    // This way all data can be written in one transaction - leading to fast performance and consistency at all time.
+                    ContentValues[] contentValuesBulk = null;
+                    
+                    // Read the result if the status was ok
                     if (status.equals("OK"))
                     {
                         // All the places of the result are stored in a results list
                         JSONArray resultPlaces = object.getJSONArray("results");
 
+                        contentValuesBulk = new ContentValues[resultPlaces.length()];
+                        
                         // Process each place
                         for (index = 0; index < resultPlaces.length(); index++)
                         {
@@ -347,9 +346,27 @@ public class NomNomUpdater
                             // Mark this entry as real
                             values.put(DatabaseOpenHelper.COLUMN_IS_SET, DatabaseOpenHelper.VALUE_TRUE);
 
-                            // Insert to content resolver
-                            contentResolver.insert(NomNomContentProvider.CONTENT_URI, values);
+                            contentValuesBulk[index] = values;
                         }
+                    }
+
+                    // After preparing the dataset changes, all contentResolver requests are now applied
+                    
+                    // Mark all existing entries as not valid anymore.
+                    // This way it's possible to have less entries for a future request then stored before.
+                    // With the re-usage we do not need to delete and insert lines over and over again, 
+                    // but re-use the before created upto 20 entries (found on one google api response page)
+                    ContentValues resetValues = new ContentValues();
+                    resetValues.put(DatabaseOpenHelper.COLUMN_IS_SET, DatabaseOpenHelper.VALUE_FALSE);
+                    contentResolver.update(NomNomContentProvider.CONTENT_URI, resetValues, null, null);
+
+                    if (contentValuesBulk != null)
+                    {
+                        // Insert to content resolver as one bulk
+                        // NOTE (fwild): For the moment we use the default ContentProvider version of this.
+                        // With more then 20 entries at once and a network sync 
+                        // it would be wise to overwrite this method and speed it up, using a transaction and a pre-created SQLiteStatement
+                        contentResolver.bulkInsert(NomNomContentProvider.CONTENT_URI, contentValuesBulk);
                     }
                 }
                 else
