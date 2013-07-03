@@ -55,7 +55,7 @@ public class NomNomActivity extends FragmentActivity
         super.onResume();
 
         // Check for updates of places near the current location.
-        NomNomUpdater.getInstance().updateFromPosition(this);
+        NomNomUpdater.getInstance().onActivityResume(this);
     }
 
     /**

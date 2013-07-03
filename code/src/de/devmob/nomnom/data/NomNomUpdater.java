@@ -23,8 +23,10 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.location.Criteria;
 import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Toast;
@@ -39,7 +41,7 @@ import de.devmob.nomnom.NomNomActivity;
  * 
  * @author Friederike Wild
  */
-public class NomNomUpdater
+public class NomNomUpdater implements LocationListener
 {
     /** Static singleton instance */
     private static NomNomUpdater sIntstance = null;
@@ -47,6 +49,9 @@ public class NomNomUpdater
     /** Instance of the location manager */
     private LocationManager mLocationManager;
 
+    /** Store the activity to handle location updates */
+    private Activity        mActivity;
+    
     /** Instance of the currently running update task. null if none is present */
     private RestaurantUpdateTask mRunningTask;
 
@@ -78,14 +83,11 @@ public class NomNomUpdater
      * If non available we trigger to get informed as soon as one comes up.
      * @param activity
      */
-    public void updateFromPosition(Activity activity)
+    public void onActivityResume(Activity activity)
     {
-        // Check if an update request is already running and in this case ignore the new one
-        if (mRunningTask != null)
-        {
-            return;
-        }
+        this.mActivity = activity;
 
+        // NOTE (fwild): This connects to the LocationManager. Could use google LocationClient too. 
         this.mLocationManager = (LocationManager)activity.getSystemService(Context.LOCATION_SERVICE);
         // Let the system decide on the best provider
         String provider = this.mLocationManager.getBestProvider(new Criteria(), false);
@@ -93,14 +95,69 @@ public class NomNomUpdater
         
         if (lastLocation == null)
         {
-            // TODO (fwild): Register for location updates
+            // Register for location updates every 30secs and when the user moves around 100 meters
+            this.mLocationManager.requestLocationUpdates(provider, 30000, 100, this);
         }
         else
         {
             LatLng lastLatLng = new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude());
-            mRunningTask = new RestaurantUpdateTask(activity);
-            mRunningTask.execute(lastLatLng);
+
+            updatePlacesForLocation(lastLatLng);
         }
+    }
+
+    /**
+     * Util method to start the places update task for the given location
+     * @param location
+     */
+    private void updatePlacesForLocation(LatLng location)
+    {
+        // Check if an update request is already running and in this case ignore the new one
+        if (mRunningTask != null)
+        {
+            return;
+        }
+
+        // Start the update task
+        mRunningTask = new RestaurantUpdateTask(this.mActivity);
+        mRunningTask.execute(location);
+    }
+
+    /* (non-Javadoc)
+     * @see android.location.LocationListener#onLocationChanged(android.location.Location)
+     */
+    @Override
+    public void onLocationChanged(Location location)
+    {
+        Log.i(NomNomActivity.TAG, "User location changed");
+        updatePlacesForLocation(new LatLng(location.getLatitude(), location.getLongitude()));
+    }
+
+    /* (non-Javadoc)
+     * @see android.location.LocationListener#onStatusChanged(java.lang.String, int, android.os.Bundle)
+     */
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras)
+    {
+        // Ignore for now
+    }
+
+    /* (non-Javadoc)
+     * @see android.location.LocationListener#onProviderEnabled(java.lang.String)
+     */
+    @Override
+    public void onProviderEnabled(String provider)
+    {
+        // Ignore for now
+    }
+
+    /* (non-Javadoc)
+     * @see android.location.LocationListener#onProviderDisabled(java.lang.String)
+     */
+    @Override
+    public void onProviderDisabled(String provider)
+    {
+        // Ignore for now
     }
 
     /**
@@ -145,8 +202,6 @@ public class NomNomUpdater
                 
                 if (!TextUtils.isEmpty(json))
                 {
-                    Log.d(NomNomActivity.TAG, json);
-
                     // Read the data that shall be shown and store it via ContentResolver
                     storePlacesViaContentResolver(json);
                 }
@@ -269,6 +324,8 @@ public class NomNomUpdater
          */
         private void storePlacesViaContentResolver(String json)
         {
+            Log.d(NomNomActivity.TAG, "Json received" /*json*/);
+
             ContentResolver contentResolver = this.mActivity.getContentResolver();
             
             // Pre-Define the index in case an error occurs
@@ -279,6 +336,7 @@ public class NomNomUpdater
                 JSONObject object = new JSONObject(json);
 
                 String status = object.getString("status");
+                Log.d(NomNomActivity.TAG, "Json status: " + status);
 
                 // If ok or no results we delete the old list and read (if available) the results
                 if (status.equals("OK") || status.equals("ZERO_RESULTS"))
@@ -292,6 +350,7 @@ public class NomNomUpdater
                     {
                         // All the places of the result are stored in a results list
                         JSONArray resultPlaces = object.getJSONArray("results");
+                        Log.d(NomNomActivity.TAG, "Json contains #" + resultPlaces.length() + " places");
 
                         contentValuesBulk = new ContentValues[resultPlaces.length()];
                         
@@ -385,4 +444,5 @@ public class NomNomUpdater
             }
         }
     }
+
 }
