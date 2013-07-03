@@ -101,9 +101,23 @@ public class NomNomUpdater implements LocationListener
         else
         {
             LatLng lastLatLng = new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude());
-
             updatePlacesForLocation(lastLatLng);
         }
+    }
+
+    /**
+     * Util method to request an update of the nearby places manually
+     */
+    public void requestPlacesUpdate()
+    {
+        Log.i(NomNomActivity.TAG, "Manual requestPlacesUpdate()");
+        
+        // Let the system decide on the best provider
+        String provider = this.mLocationManager.getBestProvider(new Criteria(), false);
+        Location lastLocation = this.mLocationManager.getLastKnownLocation(provider);
+        
+        LatLng lastLatLng = new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude());
+        updatePlacesForLocation(lastLatLng);
     }
 
     /**

@@ -82,6 +82,10 @@ public class NomNomListFragment extends ListFragment implements LoaderManager.Lo
         {
             ((NomNomActivity)this.getActivity()).switchRepresentationToMap();
         }
+        else if (item.getItemId() == R.id.action_refresh)
+        {
+            ((NomNomActivity)this.getActivity()).requestPlacesUpdate();
+        }
 
         return super.onOptionsItemSelected(item);
     }

@@ -106,6 +106,10 @@ public class NomNomMapFragment extends Fragment implements LoaderManager.LoaderC
         {
             ((NomNomActivity)this.getActivity()).switchRepresentationToList();
         }
+        else if (item.getItemId() == R.id.action_refresh)
+        {
+            ((NomNomActivity)this.getActivity()).requestPlacesUpdate();
+        }
 
         return super.onOptionsItemSelected(item);
     }

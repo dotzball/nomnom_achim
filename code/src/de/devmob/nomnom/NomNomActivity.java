@@ -75,6 +75,14 @@ public class NomNomActivity extends FragmentActivity
     }
 
     /**
+     * Method to request a places update manually
+     */
+    public void requestPlacesUpdate()
+    {
+        NomNomUpdater.getInstance().requestPlacesUpdate();
+    }
+
+    /**
      * Internal method to handle switching the fragment of the current representation.
      * @param isSwitchToMap
      */

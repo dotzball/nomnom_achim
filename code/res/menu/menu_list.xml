@@ -7,4 +7,10 @@
         android:showAsAction="ifRoom|withText"
         android:title="@string/action_map"/>
 
+    <item
+        android:id="@+id/action_refresh"
+        android:orderInCategory="200"
+        android:showAsAction="ifRoom"
+        android:icon="@drawable/action_refresh"
+        android:title="@string/action_refresh"/>
 </menu>
