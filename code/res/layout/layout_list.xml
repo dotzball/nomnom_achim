@@ -19,6 +19,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         
+        android:paddingBottom="@dimen/default_vertical_margin"
+	    android:paddingLeft="@dimen/default_horizontal_margin"
+	    android:paddingRight="@dimen/default_horizontal_margin"
+	    android:paddingTop="@dimen/default_vertical_margin"
+        
         android:layout_centerInParent="true"
         
         android:text="@string/hint_empty"
