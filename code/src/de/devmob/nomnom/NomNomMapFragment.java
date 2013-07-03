@@ -20,6 +20,7 @@ import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.GoogleMapOptions;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
@@ -36,6 +37,8 @@ import de.devmob.nomnom.data.NomNomContentProvider;
  */
 public class NomNomMapFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>
 {
+    private static final String   SAVE_MAP_OPTIONS = "mapOptions";
+    
     /** Note that this may be null if the Google Play services APK is not available. */
     private GoogleMap mMap;
     
@@ -57,11 +60,18 @@ public class NomNomMapFragment extends Fragment implements LoaderManager.LoaderC
         {
             // Try to obtain the map from the SupportMapFragment of the activity
             this.mMap = ((SupportMapFragment) this.getActivity().getSupportFragmentManager().findFragmentById(R.id.map)).getMap();
-
-            // Check if we were successful in obtaining the map
-            if (this.mMap != null)
+        }
+        
+        // Check if we were successful in obtaining the map
+        if (this.mMap != null)
+        {
+            this.setUpMap();
+            
+            if (savedInstanceState != null)
             {
-                this.setUpMap();
+                // Correct the map look according to the persistent one
+                GoogleMapOptions mapOptions = savedInstanceState.getParcelable(SAVE_MAP_OPTIONS);
+                this.mMap.moveCamera(CameraUpdateFactory.newCameraPosition(mapOptions.getCamera()));
             }
         }
     }
@@ -85,6 +95,24 @@ public class NomNomMapFragment extends Fragment implements LoaderManager.LoaderC
         super.onResume();
         this.getActivity().setTitle(R.string.title_results);
     }
+
+    /* (non-Javadoc)
+     * @see android.support.v4.app.Fragment#onSaveInstanceState(android.os.Bundle)
+     */
+    @Override
+    public void onSaveInstanceState(Bundle outState)
+    {
+        if (this.mMap != null)
+        {
+            // Store the current map specific look
+            GoogleMapOptions mapOptions = new GoogleMapOptions();
+            mapOptions.camera(this.mMap.getCameraPosition());
+            outState.putParcelable(SAVE_MAP_OPTIONS, mapOptions);
+        }
+        
+        super.onSaveInstanceState(outState);
+    }
+
 
     /* (non-Javadoc)
      * @see android.support.v4.app.Fragment#onCreateOptionsMenu(android.view.Menu, android.view.MenuInflater)
@@ -120,7 +148,7 @@ public class NomNomMapFragment extends Fragment implements LoaderManager.LoaderC
     private void setUpMap()
     {
         this.mMap.setMyLocationEnabled(true);
-        
+
         // Initialize the loader manager to start listening to cursor changes
         this.getLoaderManager().initLoader(0, null, this);
     }
@@ -146,14 +174,11 @@ public class NomNomMapFragment extends Fragment implements LoaderManager.LoaderC
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data)
     {
-        // Remove any old markers and overlays
-        this.mMap.clear();
-
         if (data == null || data.isClosed())
         {
             // The cursor can be closed for various reasons, most likely cause some new data is currently written to it.
             // Therefore ignore call and wait for the next update
-            Log.w(NomNomActivity.TAG, "onLoadFinished received a closed cursor. Ignoring new data. ");
+            Log.w(NomNomActivity.TAG, "onLoadFinished received a closed cursor. Ignoring new data.");
             return;
         }
         
@@ -165,6 +190,9 @@ public class NomNomMapFragment extends Fragment implements LoaderManager.LoaderC
             Log.w(NomNomActivity.TAG, "onLoadFinished received an empty cursor (count= " + data.getCount() + "). Ignoring new data.");
             return;
         }
+
+        // Remove any old markers and overlays
+        this.mMap.clear();
 
         // Create object to collect the bounds
         Builder boundsBuilder = new LatLngBounds.Builder();
@@ -199,30 +227,41 @@ public class NomNomMapFragment extends Fragment implements LoaderManager.LoaderC
         }
         while (data.moveToNext());
         
+        Log.d(NomNomActivity.TAG, "Map: Added new markers.");
+        
         // Pan to see all markers in view.
         final LatLngBounds bounds = boundsBuilder.build();
         // Cannot zoom to bounds until the map has a size.
         final View mapView = ((SupportMapFragment) this.getActivity().getSupportFragmentManager().findFragmentById(R.id.map)).getView();
-        if (mapView.getViewTreeObserver().isAlive())
+        
+        if (mapView.isShown())
+        {            
+            mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 50));
+        }
+        else
         {
-            mapView.getViewTreeObserver().addOnGlobalLayoutListener(new OnGlobalLayoutListener()
+            // In case call needs to be postponed
+            if (mapView.getViewTreeObserver().isAlive())
             {
-                @SuppressWarnings("deprecation") // We use the new method when supported
-                @SuppressLint("NewApi") // We check which build version we are using.
-                @Override
-                public void onGlobalLayout()
+                mapView.getViewTreeObserver().addOnGlobalLayoutListener(new OnGlobalLayoutListener()
                 {
-                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN)
+                    @SuppressWarnings("deprecation") // We use the new method when supported
+                    @SuppressLint("NewApi") // We check which build version we are using.
+                    @Override
+                    public void onGlobalLayout()
                     {
-                        mapView.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+                        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN)
+                        {
+                            mapView.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+                        }
+                        else
+                        {
+                            mapView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                        }
+                        mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 50));
                     }
-                    else
-                    {
-                        mapView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                    }
-                    mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 50));
-                }
-            });
+                });
+            }
         }
 
         // Close the old cursor and save the just received one

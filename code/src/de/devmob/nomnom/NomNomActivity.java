@@ -13,6 +13,11 @@ import de.devmob.nomnom.data.NomNomUpdater;
 /**
  * Activity holding the result restaurants on a map or a list.
  * 
+ * For now the activity is not allowed to rotate.
+ * There seems to be a bug with the getSupportFragmentManager showing 2 fragments after rotation
+ * on top of each other. Found a hint that it is ignoring setRetainInstance while doing this, but 
+ * workarounds not helping 100%.
+ * 
  * @author Friederike Wild
  */
 public class NomNomActivity extends FragmentActivity
