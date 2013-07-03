@@ -107,7 +107,12 @@ public class NomNomListFragment extends ListFragment implements LoaderManager.Lo
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data)
     {
-        mAdapter.swapCursor(data);
+        Cursor oldCursor = mAdapter.swapCursor(data);
+        // Clean up if an old cursor was stored in the adapter before
+        if (oldCursor != null)
+        {
+            oldCursor.close();
+        }
     }
 
     /* (non-Javadoc)
@@ -117,7 +122,13 @@ public class NomNomListFragment extends ListFragment implements LoaderManager.Lo
     public void onLoaderReset(Loader<Cursor> loader)
     {
         // data is not available anymore, delete reference
-        mAdapter.swapCursor(null);
+        Cursor oldCursor = mAdapter.swapCursor(null);
+        
+        // Clean up if an old cursor was stored in the adapter before
+        if (oldCursor != null)
+        {
+            oldCursor.close();
+        }
     }
 
     /**
