@@ -3,7 +3,7 @@ NomNom
 
 NomNom is a small app using the Google Places API to show nearby restaurants.
 
-![Screenshots](raw/screenshot_map.png "Screenshots")
+![Map Screenshot](raw/screenshot_map.png "Map Screenshot") ![List Screenshot](raw/screenshot_list.png "List Screenshot")
 
 Developed By
 ------------
