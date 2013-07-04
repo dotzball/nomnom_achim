@@ -9,9 +9,13 @@
     <dimen name="rating_vertical_padding">4dp</dimen>
     <dimen name="rating_corners">4dp</dimen>
 
+    <!-- Define map specific dimensions -->
+    <dimen name="map_camera_padding">30dp</dimen>
+
     <!-- Different font sizes -->
     <dimen name="font_large_size">20sp</dimen>
     <dimen name="font_med_size">16sp</dimen>
     <dimen name="font_small_size">13sp</dimen>
+    
     
 </resources>

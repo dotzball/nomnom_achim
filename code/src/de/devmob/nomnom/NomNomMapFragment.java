@@ -3,9 +3,7 @@
  */
 package de.devmob.nomnom;
 
-import android.annotation.SuppressLint;
 import android.database.Cursor;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
@@ -16,14 +14,15 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.GoogleMap.OnCameraChangeListener;
 import com.google.android.gms.maps.GoogleMapOptions;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.LatLngBounds.Builder;
@@ -239,37 +238,33 @@ public class NomNomMapFragment extends Fragment implements LoaderManager.LoaderC
         
         // Pan to see all markers in view.
         final LatLngBounds bounds = boundsBuilder.build();
-        // Cannot zoom to bounds until the map has a size.
-        final View mapView = ((SupportMapFragment) this.getActivity().getSupportFragmentManager().findFragmentById(R.id.map)).getView();
+        final int markerPadding = this.getResources().getDimensionPixelSize(R.dimen.map_camera_padding);
         
-        if (mapView.isShown())
-        {            
-            mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 50));
-        }
-        else
+        // Cannot zoom to bounds until the map has a size.
+        // Unfortunately checking this doesn't work on all devices.
+        // Therefore we try to move the camera and catch if this doesn't work atm
+        try
         {
-            // In case call needs to be postponed
-            if (mapView.getViewTreeObserver().isAlive())
+            mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, markerPadding));
+        }
+        catch (IllegalStateException e)
+        {
+            // In case the map isn't completely layouted yet, the call needs to be postponed
+            Log.i(NomNomActivity.TAG, "Map wasn't ready while markers got added. Postponed camera update.");
+            
+            // Register to listen to the camera to be ready
+            mMap.setOnCameraChangeListener(new OnCameraChangeListener()
             {
-                mapView.getViewTreeObserver().addOnGlobalLayoutListener(new OnGlobalLayoutListener()
+                @Override
+                public void onCameraChange(CameraPosition position)
                 {
-                    @SuppressWarnings("deprecation") // We use the new method when supported
-                    @SuppressLint("NewApi") // We check which build version we are using.
-                    @Override
-                    public void onGlobalLayout()
-                    {
-                        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN)
-                        {
-                            mapView.getViewTreeObserver().removeGlobalOnLayoutListener(this);
-                        }
-                        else
-                        {
-                            mapView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                        }
-                        mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 50));
-                    }
-                });
-            }
+                    // Remove the listener again to not be called again during camera move
+                    mMap.setOnCameraChangeListener(null);
+
+                    // Now trigger the camera update to the before created markers
+                    mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, markerPadding));
+                }
+            });
         }
 
         // Close the old cursor and save the just received one
