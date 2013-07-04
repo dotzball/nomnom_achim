@@ -91,9 +91,13 @@ public class NomNomUpdater implements LocationListener
         // Let the system decide on the best provider
         String provider = this.mLocationManager.getBestProvider(new Criteria(), false);
         Location lastLocation = this.mLocationManager.getLastKnownLocation(provider);
-        
-        LatLng lastLatLng = new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude());
-        updatePlacesForLocation(lastLatLng);
+
+        // Last location can be empty in case the provider is currently disabled
+        if (lastLocation != null)
+        {
+            LatLng lastLatLng = new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude());
+            updatePlacesForLocation(lastLatLng);
+        }
     }
 
     /**
@@ -132,9 +136,13 @@ public class NomNomUpdater implements LocationListener
         // Let the system decide on the best provider
         String provider = this.mLocationManager.getBestProvider(new Criteria(), false);
         Location lastLocation = this.mLocationManager.getLastKnownLocation(provider);
-        
-        LatLng lastLatLng = new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude());
-        updatePlacesForLocation(lastLatLng);
+
+        // Last location can be empty in case the provider is currently disabled
+        if (lastLocation != null)
+        {
+            LatLng lastLatLng = new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude());
+            updatePlacesForLocation(lastLatLng);
+        }
     }
 
     /**
