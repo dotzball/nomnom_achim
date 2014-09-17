@@ -284,10 +284,8 @@ public class NomNomUpdater implements LocationListener
             // Insert type
             googleUrlBuilder.append("&types=");
             googleUrlBuilder.append(category);
-            // Insert sensor information
-            googleUrlBuilder.append("&sensor=true"); // Always true for android apps
             // Insert api key information
-            googleUrlBuilder.append("&key="); // Always true for android apps
+            googleUrlBuilder.append("&key=");
             googleUrlBuilder.append(apiKey);
 
             return googleUrlBuilder.toString();
