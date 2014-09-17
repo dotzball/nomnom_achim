@@ -208,7 +208,7 @@ public class NomNomUpdater implements LocationListener
     public class RestaurantUpdateTask extends AsyncTask<LatLng, Void, Void>
     {
         /** Our google api key for web requests */
-        private static final String GOOGLE_API_KEY = "AIzaSyAXqMUdkJWl3eh5GyrDjWkjO0n2EAP1XNw";
+        private static final String GOOGLE_API_KEY = "AIzaSyDaMci9yHm4j7ydGszWK85csoIsSAK3SuM";
         /** Nom Nom shall only show restaurants nearby */
         private static final String WANTED_CATEGORY = "restaurant";
         /** Constant of one mile in meters */
